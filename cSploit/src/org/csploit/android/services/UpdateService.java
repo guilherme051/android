@@ -950,7 +950,7 @@ public class UpdateService extends IntentService
     try {
       Logger.info("bundled core: copying asset to " + mCurrentTask.path);
 
-      input = getAssets().open("core-arm-portable-v1.tar.xz");
+      input = getAssets().open("core-arm-portable-v3.tar.xz");
       output = new FileOutputStream(destination);
 
       byte[] buffer = new byte[32768];

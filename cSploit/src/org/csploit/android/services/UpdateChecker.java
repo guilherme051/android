@@ -107,7 +107,7 @@ public class UpdateChecker extends Thread
     // Do not depend on the obsolete remote platform/ABI asset selection.
     if (localVersion == null) {
       Logger.info("bundled core: core not installed; selecting APK bundled portable core");
-      return new CoreUpdate(mContext, null, "portable-v1");
+      return new CoreUpdate(mContext, null, "portable-v3");
     }
 
     String platform = System.getPlatform();
