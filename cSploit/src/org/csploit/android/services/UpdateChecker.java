@@ -102,6 +102,14 @@ public class UpdateChecker extends Thread
 
   private Update getCoreUpdate() {
     String localVersion = System.getCoreVersion();
+
+    // BUILD04: first installation uses the portable core bundled in the APK.
+    // Do not depend on the obsolete remote platform/ABI asset selection.
+    if (localVersion == null) {
+      Logger.info("bundled core: core not installed; selecting APK bundled portable core");
+      return new CoreUpdate(mContext, null, "portable-v1");
+    }
+
     String platform = System.getPlatform();
     String remoteVersion, remoteURL;
     Update update;
