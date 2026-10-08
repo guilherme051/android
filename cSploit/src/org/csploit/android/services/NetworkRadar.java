@@ -99,6 +99,9 @@ public class NetworkRadar extends NativeService implements MenuControllableServi
 
     @Override
     public void onHostFound(byte[] macAddress, InetAddress ipAddress, String name) {
+      Logger.warning("DIAG-RADAR-JAVA: onHostFound ip=" +
+              (ipAddress == null ? "NULL" : ipAddress.getHostAddress()) +
+              " name=" + name);
       Target t;
       boolean notify = false;
       boolean justFound;
@@ -110,6 +113,8 @@ public class NetworkRadar extends NativeService implements MenuControllableServi
         t = new Target(ipAddress, macAddress);
         t.setAlias(name);
         System.addOrderedTarget(t);
+        Logger.warning("DIAG-RADAR-JAVA: Target adicionado ip=" +
+                (ipAddress == null ? "NULL" : ipAddress.getHostAddress()));
         notify = true;
       } else {
         if (!t.isConnected()) {

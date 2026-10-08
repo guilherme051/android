@@ -203,6 +203,8 @@ public class ChildManager {
    * this function is the main entry point for generated events.
    */
   public static void onEvent(final int childID, final Event event) {
+    Logger.warning("DIAG-CHILD-EVENT: child=" + childID +
+            " event=" + (event == null ? "NULL" : event.toString()));
     Child c;
 
     if(!(event instanceof Newline)) {
