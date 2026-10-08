@@ -925,6 +925,56 @@ public class UpdateService extends IntentService
     }
   }
 
+  /**
+   * Materialize the bundled portable core into the normal UpdateService
+   * temporary path.  From this point onward the legacy updater handles
+   * integrity checking, extraction, permissions and VERSION creation.
+   */
+  private void prepareBundledCore() throws IOException {
+    if (!(mCurrentTask instanceof CoreUpdate))
+      return;
+
+    if (mCurrentTask.path == null)
+      throw new IOException("bundled core has no destination path");
+
+    File destination = new File(mCurrentTask.path);
+
+    if (destination.exists() && destination.isFile()) {
+      Logger.info("bundled core: local update archive already exists");
+      return;
+    }
+
+    InputStream input = null;
+    FileOutputStream output = null;
+
+    try {
+      Logger.info("bundled core: copying asset to " + mCurrentTask.path);
+
+      input = getAssets().open("core-arm-portable-v1.tar.xz");
+      output = new FileOutputStream(destination);
+
+      byte[] buffer = new byte[32768];
+      int count;
+
+      while ((count = input.read(buffer)) != -1) {
+        output.write(buffer, 0, count);
+      }
+
+      output.flush();
+
+      Logger.info("bundled core: asset materialized, bytes=" +
+              destination.length());
+    } finally {
+      if (output != null) {
+        try { output.close(); } catch (IOException ignored) {}
+      }
+
+      if (input != null) {
+        try { input.close(); } catch (IOException ignored) {}
+      }
+    }
+  }
+
   @Override
   protected void onHandleIntent(Intent intent) {
     mCurrentTask = (Update) intent.getSerializableExtra(UPDATE);
@@ -941,6 +991,10 @@ public class UpdateService extends IntentService
       setupNotification();
 
       mCurrentTask.errorOccurred = true;
+
+      if (mCurrentTask instanceof CoreUpdate)
+        prepareBundledCore();
+
       if (!haveLocalFile())
         downloadFile();
 
