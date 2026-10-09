@@ -70,3 +70,7 @@ Do not ask the user to explain the project again.
 Recover context from Git and `docs/` first.
 State the recovered branch, checkpoint, current blocker and next experiment before proposing a change.
 Work one experiment at a time and update this handoff whenever the proven boundary moves.
+
+## User operating instructions
+
+Before issuing commands or asking the user to perform development work, read `docs/USER_OPERATING_PROFILE.md` and follow it as the interaction protocol for this project.

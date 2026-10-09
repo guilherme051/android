@@ -43,3 +43,7 @@ For every new AI development session, read these files in this order:
 10. `docs/RECOVERY.md`
 
 The AI must recover project context from Git and these documents before asking the user to explain previous work. The current working boundary is always recorded in `AI_HANDOFF.md`.
+
+## User interaction profile
+
+Before giving development commands, the AI must also read `docs/USER_OPERATING_PROFILE.md`. It defines the laboratory context, user technical profile, explanation requirements, copy/paste command workflow, large-output TXT rule, safety procedure and session-continuity responsibilities.
