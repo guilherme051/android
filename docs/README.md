@@ -26,3 +26,20 @@ The current blocker is **Farol** (`network-radar`): its ARM64 port reaches live 
 
 ## AI handoff
 Read every document in this directory before proposing changes. Do not restart solved investigations. Treat CURRENT_DEBUG_STATE.md as the active debugging boundary and DO_NOT_REPEAT.md as a hard constraint.
+
+## AI continuation protocol
+
+For every new AI development session, read these files in this order:
+
+1. `docs/README.md`
+2. `docs/AI_HANDOFF.md`
+3. `docs/AI_OPERATING_PROTOCOL.md`
+4. `docs/PROJECT_CHECKPOINT.md`
+5. `docs/ARCHITECTURE.md`
+6. `docs/DEVELOPMENT_HISTORY.md`
+7. `docs/CURRENT_DEBUG_STATE.md`
+8. `docs/DO_NOT_REPEAT.md`
+9. `docs/ROADMAP.md`
+10. `docs/RECOVERY.md`
+
+The AI must recover project context from Git and these documents before asking the user to explain previous work. The current working boundary is always recorded in `AI_HANDOFF.md`.
