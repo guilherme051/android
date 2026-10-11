@@ -12,6 +12,7 @@ import org.csploit.android.core.System;
 import org.csploit.android.helpers.ThreadHelper;
 import org.csploit.android.net.Endpoint;
 import org.csploit.android.net.Network;
+import org.csploit.android.net.NetworkAddressing;
 import org.csploit.android.net.Target;
 import org.csploit.android.tools.NMap;
 import org.csploit.android.tools.NetworkRadar.HostReceiver;
@@ -102,6 +103,15 @@ public class NetworkRadar extends NativeService implements MenuControllableServi
       Logger.warning("DIAG-RADAR-JAVA: onHostFound ip=" +
               (ipAddress == null ? "NULL" : ipAddress.getHostAddress()) +
               " name=" + name);
+      Network network = System.getNetwork();
+      if (ipAddress == null || ipAddress.getAddress().length != 4
+              || ipAddress.isAnyLocalAddress() || ipAddress.isMulticastAddress()
+              || "255.255.255.255".equals(ipAddress.getHostAddress())
+              || NetworkAddressing.isBroadcastMac(macAddress)
+              || (network != null && network.isBroadcast(ipAddress))) {
+        Logger.info("Ignoring non-host network-radar event.");
+        return;
+      }
       Target t;
       boolean notify = false;
       boolean justFound;

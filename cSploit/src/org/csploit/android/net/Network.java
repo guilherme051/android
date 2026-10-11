@@ -29,6 +29,7 @@ import android.support.annotation.NonNull;
 import org.apache.commons.net.util.SubnetUtils;
 
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.NoRouteToHostException;
 import java.net.SocketException;
@@ -92,6 +93,7 @@ public class Network implements Comparable<Network>
   private NetworkInterface mInterface = null;
   private IP4Address mGateway = null;
   private IP4Address mNetmask = null;
+  private IP4Address mInterfaceNetmask = null;
   private IP4Address mLocal = null;
   private IP4Address mBase = null;
 
@@ -111,8 +113,6 @@ public class Network implements Comparable<Network>
     mWifiInfo = mWifiManager.getConnectionInfo();
     mLocal = new IP4Address(mInfo.ipAddress);
     mGateway = new IP4Address(mInfo.gateway);
-    mNetmask = getNetmask();
-    mBase = new IP4Address(mInfo.netmask & mInfo.gateway);
 
     if(isConnected() == false)
       throw new NoRouteToHostException("Not connected to any WiFi access point.");
@@ -139,10 +139,24 @@ public class Network implements Comparable<Network>
           throw e;
       }
     }
+    mNetmask = getNetmask();
+    mBase = new IP4Address(mLocal.toInteger() & mNetmask.toInteger());
   }
 
-  private IP4Address getNetmask() throws UnknownHostException {
-    IP4Address result = new IP4Address(mInfo.netmask);
+  private IP4Address getNetmask() throws UnknownHostException, SocketException {
+    Integer prefix = null;
+    for (InterfaceAddress address : mInterface.getInterfaceAddresses()) {
+      if (getLocalAddress().equals(address.getAddress())) {
+        prefix = Integer.valueOf(address.getNetworkPrefixLength());
+        break;
+      }
+    }
+    try {
+      mInterfaceNetmask = new IP4Address(NetworkAddressing.selectMask(prefix, mInfo.netmask));
+    } catch (IllegalArgumentException e) {
+      throw new SocketException(e.getMessage());
+    }
+    IP4Address result = mInterfaceNetmask;
 
     if(System.getSettings().getBoolean("WIDE_SCAN", false)) {
       SubnetUtils privateNetwork;
@@ -151,7 +165,8 @@ public class Network implements Comparable<Network>
         privateNetwork = new SubnetUtils(cidr_notation);
 
         if(privateNetwork.getInfo().isInRange(mLocal.toString())) {
-          result = new IP4Address(privateNetwork.getInfo().getNetmask());
+          result = new IP4Address(NetworkAddressing.maskFromPrefix(
+                  new IP4Address(privateNetwork.getInfo().getNetmask()).getPrefixLength()));
           break;
         }
       }
@@ -165,7 +180,9 @@ public class Network implements Comparable<Network>
   }
 
   public boolean isInternal(byte[] address) {
-    byte[] gateway = mGateway.toByteArray();
+    if (address == null || address.length != 4)
+      return false;
+    byte[] gateway = mLocal.toByteArray();
     byte[] mask = mNetmask.toByteArray();
 
     for(int i = 0; i < gateway.length; i++)
@@ -173,6 +190,15 @@ public class Network implements Comparable<Network>
         return false;
 
     return true;
+  }
+
+  public boolean isBroadcast(InetAddress address) {
+    if (address == null || address.getAddress().length != 4)
+      return false;
+    byte[] bytes = address.getAddress();
+    int value = (bytes[0] & 0xff) | ((bytes[1] & 0xff) << 8)
+            | ((bytes[2] & 0xff) << 16) | ((bytes[3] & 0xff) << 24);
+    return NetworkAddressing.isBroadcast(value, mLocal.toInteger(), mInterfaceNetmask.toInteger());
   }
 
   public boolean isInternal(String ip){
